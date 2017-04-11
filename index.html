@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+.node circle {
+	fill: red;
+}
+
+.node text {
+	font: 10px sans-serif;
+	font-weight: bold;
+}
+
+.node--internal circle {
+	fill: black;
+}
+
+.node--internal text {
+	text-shadow: 0 1px 0 #fff, 0 -1px 0 #fff, 1px 0 0 #fff, -1px 0 0 #fff;
+}
+
+.link {
+	fill: none;
+	stroke: #555;
+	stroke-opacity: 0.7;
+	stroke-width: 1.0px;
+}
+
+</style>
+<body>
+	<div id="main">
+	<span>
+		Group By:
+		<form>
+			<label><input type="radio" name="mode" value="activity" checked>Activity</label>
+			<label><input type="radio" name="mode" value="object">Object</label>
+		</form>
+	</span>
+	</div>
+	<script src="https://d3js.org/d3.v4.min.js"></script>
+	<script>
+	function visualize() {
+		// creates svg layer for tree graph
+		var svg = d3.select("#main").append("svg")
+					.attr("width", 1280)
+					.attr("height", 700),
+			width = +svg.attr("width"),
+			height = +svg.attr("height"),
+			g = svg.append("g").attr("transform", "translate(90,0)");
+
+		// sets tree graph size within svg
+		var tree = d3.tree()
+		.size([height, width - 500]);
+
+		d3.csv("Locus_seattle_aerospace.csv", function(d) {
+			// Reorganizes the data into columns and creates key value pairs from column titles
+		    return {
+		    	label: d.label,
+		    	Activity: d.Activity,
+		    	Object: d.Object
+		    };
+		}, function(data) {
+			var button = d3.select("input[value=\"activity\"]").property("checked");
+			// provide parent nodes through the different Activity/Object names
+			function prepData(array){
+				var copyData = Array.prototype.slice.call(array);
+				if (button == true) {
+					var uniqueActivity = d3.map(copyData, function(d) {return d.Activity;}).keys();
+					for (i = 0; i < uniqueActivity.length; i++) {
+						uniqueActivity[i] = {"label": uniqueActivity[i], "Activity": "Seattle Aerospace"};
+						copyData.push(uniqueActivity[i]);
+					}
+				} else {
+					var uniqueObject = d3.map(copyData, function(d) { return d.Object; }).keys();
+					for (i = 0; i < uniqueObject.length; i++) {
+						uniqueObject[i] = {"label": uniqueObject[i], "Object": "Seattle Aerospace"};
+						copyData.push(uniqueObject[i]);
+					}
+				}
+				// consolidate into one root
+				copyData.push({"label": "Seattle Aerospace"});
+				return copyData;
+			}
+
+			// // Stratify data for treemap
+			var root = d3.stratify()
+				.id(function(d) { return d.label; })
+				.parentId(function(d) {
+					if (button == true) {
+						return d.Activity;
+					} else { return d.Object; }
+				})
+				(prepData(data));
+
+			var link = g.selectAll(".link")
+						.data(tree(root).descendants().slice(1))
+						.enter().append("path")
+						.attr("class", "link")
+						.attr("d", diagonal);
+
+			var node = g.selectAll(".node")
+						.data(root.descendants())
+						.enter().append("g")
+						.attr("class", function(d) { return "node" + (d.children ? " node--internal" : " node--leaf"); })
+						.attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; });
+
+			node.append("circle")
+				.attr("r", 2.5);
+
+			node.append("text")
+				.attr("dy", 3)
+				.attr("x", function(d) { return d.children ? -4 : 8; })
+				.style("text-anchor", function(d) { return d.children ? "end" : "start"; })
+				.text(function(d) { return d.id; });
+		});
+	}
+
+	window.onload = function() {
+		visualize();
+	};
+
+	d3.selectAll("input").on("change", function() {
+		d3.select("#main").selectAll("svg").remove();
+		visualize();
+	});
+
+	function diagonal(d) {
+	  return "M" + d.y + "," + d.x
+	      + "C" + (d.parent.y + 100) + "," + d.x
+	      + " " + (d.parent.y + 100) + "," + d.parent.x
+	      + " " + d.parent.y + "," + d.parent.x;
+	}
+</script>

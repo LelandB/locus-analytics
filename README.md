@@ -1,3 +1,5 @@
 # Design Thoughts and Implementation
 
-My initial thoughts on looking at the data was that there were no numerical values. A pie chart or bar graph would provide little information to the viewer. I noticed that the companies could be grouped by either their 
+My initial thoughts on looking at the data was that there were no numerical values. A pie chart or bar graph would provide little information to the viewer. I noticed that the companies could be grouped by either their Activity or Object. I chose a tree graph to best visualize the data in an easy to read/understand manner. It's visually more interesting than a bar chart that sums up the number of companies grouped under an Activity/Object and you can easily see which companies are grouped in which cluster. As there are multiple ways of clustering the data, I added in a switch for the viewer to choose their data-grouping. 
+
+If this was a full project for a client, I would add a feature that let you color companies by clustering so when you switched views you could have a better understanding of the two groupings at once.

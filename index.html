@@ -91,12 +91,14 @@
 				})
 				(prepData(data));
 
+			// visualize links
 			var link = g.selectAll(".link")
 						.data(tree(root).descendants().slice(1))
 						.enter().append("path")
 						.attr("class", "link")
 						.attr("d", diagonal);
 
+			// categorize nodes and apply them to svg layer
 			var node = g.selectAll(".node")
 						.data(root.descendants())
 						.enter().append("g")
@@ -118,11 +120,13 @@
 		visualize();
 	};
 
+	// clears previous svg to show different visualization
 	d3.selectAll("input").on("change", function() {
 		d3.select("#main").selectAll("svg").remove();
 		visualize();
 	});
 
+	// calculates curves for links between nodes
 	function diagonal(d) {
 	  return "M" + d.y + "," + d.x
 	      + "C" + (d.parent.y + 100) + "," + d.x
